@@ -18,7 +18,16 @@ public class PocempApplication {
 	CommandLineRunner alterEnum(JdbcTemplate jdbcTemplate) {
 		return args -> {
 			try {
-				jdbcTemplate.execute("ALTER TABLE tasks MODIFY COLUMN status ENUM('TASK_REPORTED', 'TASK_ASSIGNED_TO_TECHNICIAN', 'IN_PROGRESS', 'MATERIALS_REQUESTED', 'MATERIALS_APPROVED', 'TECHNICIAN_FINISHED', 'COMPLETED', 'CLOSED')");
+				// PostgreSQL: Ensure the status column is VARCHAR so it can hold all enum values.
+				// With @Enumerated(EnumType.STRING), Hibernate stores enums as strings.
+				// This ALTER ensures the column type is compatible if it was previously constrained.
+				jdbcTemplate.execute(
+					"DO $$ BEGIN " +
+					"  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'tasks' AND column_name = 'status') THEN " +
+					"    ALTER TABLE tasks ALTER COLUMN status TYPE VARCHAR(255); " +
+					"  END IF; " +
+					"END $$"
+				);
 				System.out.println("ENUM ALTERED SUCCESSFULLY");
 			} catch (Exception e) {
 				System.out.println("Failed to alter ENUM: " + e.getMessage());
