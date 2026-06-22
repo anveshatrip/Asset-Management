@@ -1,0 +1,12 @@
+package com.emppoc.pocemp.enums;
+
+public enum TaskStatus {
+    TASK_REPORTED,
+    TASK_ASSIGNED_TO_TECHNICIAN,
+    IN_PROGRESS,
+    MATERIALS_REQUESTED,
+    MATERIALS_APPROVED,
+    TECHNICIAN_FINISHED,
+    COMPLETED,
+    CLOSED;
+}

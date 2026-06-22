@@ -1,0 +1,22 @@
+# React / Node
+node_modules/
+build/
+dist/
+.env
+
+# Spring Boot / Java
+target/
+*.class
+*.log
+*.jar
+*.war
+*.ear
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
