@@ -43,31 +43,29 @@ jobs:
   # Frontend: Build & Validate
   # ──────────────────────────────────────────────
   frontend-ci:
+    frontend-ci:
     name: Frontend CI
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: one
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Set up Node.js 18
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: one/package-lock.json
-
       - name: Install dependencies
         run: npm install
-
+      - name: Run Playwright tests
+        run: npm run test:playwright
       - name: Build
         run: npm run build
         env:
           CI: false
-
   # ──────────────────────────────────────────────
   # Deploy Backend to Render
   # ──────────────────────────────────────────────
