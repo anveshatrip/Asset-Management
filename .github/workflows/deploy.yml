@@ -8,7 +8,7 @@ on:
 
 jobs:
   # ──────────────────────────────────────────────
-  # Backend: Build & Test
+  # Backend: Build & Package
   # ──────────────────────────────────────────────
   backend-ci:
     name: Backend CI
@@ -40,7 +40,7 @@ jobs:
           retention-days: 3
 
   # ──────────────────────────────────────────────
-  # Frontend: Build & Test
+  # Frontend: Build & Validate
   # ──────────────────────────────────────────────
   frontend-ci:
     name: Frontend CI
@@ -84,30 +84,6 @@ jobs:
           echo "Render deployment triggered successfully"
 
   # ──────────────────────────────────────────────
-  # Deploy Frontend to Vercel
+  # Frontend deploys automatically via Vercel's
+  # GitHub integration (no action needed here)
   # ──────────────────────────────────────────────
-  deploy-frontend:
-    name: Deploy Frontend (Vercel)
-    needs: [backend-ci, frontend-ci]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js 18
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: one/package-lock.json
-
-      - name: Install Vercel CLI
-        run: npm install -g vercel
-
-      - name: Deploy to Vercel
-        run: vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
