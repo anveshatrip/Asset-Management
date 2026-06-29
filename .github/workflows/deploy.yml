@@ -16,7 +16,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Build backend
-        run: cd backend && mvn clean install
+        run: cd pocemp && mvn clean install
 
   test-frontend:
     runs-on: ubuntu-latest
@@ -27,9 +27,9 @@ jobs:
         with:
           node-version: '18'
       - name: Install dependencies
-        run: cd frontend && npm install
+        run: cd one && npm install
       - name: Build frontend
-        run: cd frontend && npm run build
+        run: cd one && npm run build
 
   deploy:
     needs: [test-backend, test-frontend]
