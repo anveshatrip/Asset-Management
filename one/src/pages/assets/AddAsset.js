@@ -7,6 +7,7 @@ const AddAsset = () => {
     const [form, setForm] = useState({ name: '', description: '' });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -18,48 +19,74 @@ const AddAsset = () => {
             setError('Asset name is required');
             return;
         }
+        setLoading(true);
+        setError('');
         try {
             await api.post('/assets', form);
-            setSuccess('Asset added successfully! Redirecting...');
-            setError('');
+            setSuccess('Asset added successfully! Redirecting…');
             setTimeout(() => navigate('/assets'), 1500);
         } catch (err) {
-            setError('Failed to add asset');
+            setError('Failed to add asset. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div>
+        <div style={styles.page}>
             <Navbar />
             <div style={styles.container}>
                 <div style={styles.card}>
-                    <h2 style={styles.title}>Add New Asset</h2>
+                    <div style={styles.cardHeader}>
+                        <h2 style={styles.title}>Add New Asset</h2>
+                        <p style={styles.subtitle}>Register a new asset to the system</p>
+                    </div>
 
-                    {error && <p style={styles.error}>{error}</p>}
-                    {success && <p style={styles.success}>{success}</p>}
+                    {error && (
+                        <div style={styles.errorBox}>
+                            <span>⚠</span> {error}
+                        </div>
+                    )}
+                    {success && (
+                        <div style={styles.successBox}>
+                            <span>✓</span> {success}
+                        </div>
+                    )}
 
-                    <input
-                        style={styles.input}
-                        name="name"
-                        placeholder="Asset name"
-                        value={form.name}
-                        onChange={handleChange}
-                    />
-                    <textarea
-                        style={{ ...styles.input, height: '100px', resize: 'vertical' }}
-                        name="description"
-                        placeholder="Description (optional)"
-                        value={form.description}
-                        onChange={handleChange}
-                    />
-                    <button style={styles.button} onClick={handleSubmit}>
-                        Add Asset
-                    </button>
-                    <button
-                        style={styles.cancel}
-                        onClick={() => navigate('/assets')}>
-                        Cancel
-                    </button>
+                    <div style={styles.fieldGroup}>
+                        <label style={styles.label}>Asset Name <span style={styles.required}>*</span></label>
+                        <input
+                            style={styles.input}
+                            name="name"
+                            placeholder="e.g. HVAC Unit 3, Printer A1"
+                            value={form.name}
+                            onChange={handleChange}
+                            autoFocus
+                        />
+                    </div>
+
+                    <div style={styles.fieldGroup}>
+                        <label style={styles.label}>Description</label>
+                        <textarea
+                            style={{ ...styles.input, height: '110px', resize: 'vertical' }}
+                            name="description"
+                            placeholder="Optional description, location, model, etc."
+                            value={form.description}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div style={styles.buttonRow}>
+                        <button
+                            style={{ ...styles.button, opacity: loading ? 0.7 : 1 }}
+                            onClick={handleSubmit}
+                            disabled={loading}>
+                            {loading ? 'Adding…' : 'Add Asset'}
+                        </button>
+                        <button style={styles.cancelButton} onClick={() => navigate('/assets')}>
+                            Cancel
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -67,58 +94,57 @@ const AddAsset = () => {
 };
 
 const styles = {
-    container: {
-        display: 'flex',
-        justifyContent: 'center',
-        padding: '40px 24px',
-        backgroundColor: '#DCD1C7',
-        minHeight: '100vh',
-    },
+    page: { backgroundColor: '#F0EBE5', minHeight: '100vh' },
+    container: { display: 'flex', justifyContent: 'center', padding: '48px 24px' },
     card: {
         backgroundColor: 'white',
-        padding: '32px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        padding: '36px 40px',
+        borderRadius: '16px',
+        boxShadow: '0 8px 28px rgba(44,58,71,0.10), 0 2px 6px rgba(44,58,71,0.05)',
         width: '100%',
-        maxWidth: '440px',
+        maxWidth: '480px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px',
+        gap: '20px',
         height: 'fit-content',
+        border: '1px solid rgba(229,224,219,0.4)',
     },
-    title: {
-        margin: 0,
-        fontSize: '20px',
-        color: '#616F84',
+    cardHeader: { marginBottom: '4px' },
+    title: { margin: '0 0 6px 0', fontSize: '20px', fontWeight: '700', color: '#2C3A47', letterSpacing: '-0.3px' },
+    subtitle: { margin: 0, color: '#6B7280', fontSize: '13.5px' },
+    errorBox: {
+        display: 'flex', alignItems: 'center', gap: '8px',
+        padding: '10px 14px', backgroundColor: '#FEF2F2',
+        border: '1px solid #FECACA', borderRadius: '8px',
+        color: '#B91C1C', fontSize: '13px',
     },
+    successBox: {
+        display: 'flex', alignItems: 'center', gap: '8px',
+        padding: '10px 14px', backgroundColor: '#F0FDF4',
+        border: '1px solid #BBF7D0', borderRadius: '8px',
+        color: '#166534', fontSize: '13px',
+    },
+    fieldGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
+    label: { fontSize: '13px', fontWeight: '500', color: '#374151' },
+    required: { color: '#C0392B' },
     input: {
-        padding: '10px 14px',
-        borderRadius: '6px',
-        border: '1px solid #ddd',
-        fontSize: '14px',
-        width: '100%',
-        boxSizing: 'border-box',
+        padding: '11px 14px', borderRadius: '8px',
+        border: '1.5px solid #E5E0DB', fontSize: '14px',
+        width: '100%', boxSizing: 'border-box',
+        backgroundColor: '#FAFAF9', color: '#2C3A47', fontFamily: 'inherit',
     },
+    buttonRow: { display: 'flex', gap: '10px', marginTop: '4px' },
     button: {
-        padding: '10px',
-        backgroundColor: '#917E71',
-        color: 'white',
-        border: 'none',
-        borderRadius: '6px',
-        fontSize: '15px',
-        cursor: 'pointer',
+        flex: 1, padding: '12px', backgroundColor: '#5C6B7A',
+        color: 'white', border: 'none', borderRadius: '8px',
+        fontSize: '15px', fontWeight: '600', cursor: 'pointer',
     },
-    cancel: {
-        padding: '10px',
-        backgroundColor: '#685C54',
-        color: 'white',
-        border: 'none',
-        borderRadius: '6px',
-        fontSize: '15px',
-        cursor: 'pointer',
+    cancelButton: {
+        flex: '0 0 auto', padding: '12px 20px',
+        backgroundColor: 'transparent', color: '#6B7280',
+        border: '1.5px solid #E5E0DB', borderRadius: '8px',
+        fontSize: '14px', fontWeight: '500', cursor: 'pointer',
     },
-    error: { color: 'red', fontSize: '13px', margin: 0 },
-    success: { color: 'green', fontSize: '13px', margin: 0 },
 };
 
 export default AddAsset;

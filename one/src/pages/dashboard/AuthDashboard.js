@@ -4,6 +4,18 @@ import api from '../../api/axios';
 import Navbar from '../../components/Navbar';
 import { useAuth } from '../../context/AuthContext';
 
+const statusColor = (status) => {
+    const colors = {
+        REPORTED:                      '#D97706',
+        ASSIGNED:                      '#6D5F54',
+        IN_PROGRESS:                   '#7C5C8A',
+        PENDING_MATERIAL_APPROVAL:     '#C0392B',
+        COMPLETED_PENDING_CONFIRMATION:'#C2710C',
+        COMPLETED:                     '#147A5E',
+    };
+    return colors[status] || '#6B7280';
+};
+
 const AuthDashboard = () => {
     const [users, setUsers] = useState([]);
     const [tasks, setTasks] = useState([]);
@@ -62,52 +74,76 @@ const AuthDashboard = () => {
         }
     };
 
-    const statusColor = (status) => {
-        const colors = {
-            REPORTED: '#f59e0b',
-            ASSIGNED: '#3b82f6',
-            IN_PROGRESS: '#8b5cf6',
-            PENDING_MATERIAL_APPROVAL: '#ef4444',
-            COMPLETED_PENDING_CONFIRMATION: '#f97316',
-            COMPLETED: '#10b981',
-        };
-        return colors[status] || '#666';
+    const roleColors = {
+        USER: '#5C6B7A',
+        TECHNICIAN: '#7C5C8A',
+        MANAGER: '#D97706',
+        AUTH: '#C0392B',
     };
 
     return (
-        <div>
+        <div style={styles.page}>
             <Navbar />
             <div style={styles.container}>
-                <h2 style={styles.heading}>Admin Dashboard</h2>
-                <p style={styles.subtitle}>Welcome, {user.username}</p>
+                <div style={styles.pageHeader}>
+                    <div>
+                        <h2 style={styles.heading}>Admin Dashboard</h2>
+                        <p style={styles.subheading}>Welcome back, <strong>{user.username}</strong></p>
+                    </div>
+                </div>
 
-                {error && <p style={styles.error}>{error}</p>}
-                {success && <p style={styles.success}>{success}</p>}
+                {error && (
+                    <div style={styles.errorBox}>
+                        <span>⚠</span> {error}
+                    </div>
+                )}
+                {success && (
+                    <div style={styles.successBox}>
+                        <span>✓</span> {success}
+                    </div>
+                )}
 
+                {/* Users Section */}
                 <div style={styles.section}>
-                    <h3 style={styles.sectionTitle}>Manage Users</h3>
+                    <div style={styles.sectionHeader}>
+                        <h3 style={styles.sectionTitle}>Manage Users</h3>
+                        <span style={styles.count}>{users.length}</span>
+                    </div>
                     <div style={styles.card}>
                         <table style={styles.table}>
                             <thead>
-                                <tr>
+                                <tr style={styles.tableHeaderRow}>
                                     <th style={styles.th}>Username</th>
                                     <th style={styles.th}>Current Role</th>
-                                    <th style={styles.th}>Action</th>
-                                    <th style={styles.th}>Delete</th>
+                                    <th style={styles.th}>Change Role</th>
+                                    <th style={styles.th}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {users.map(u => (
-                                    <tr key={u.username}>
-                                        <td style={styles.td}>{u.username}</td>
-                                        <td style={styles.td}>{u.role}</td>
+                                    <tr key={u.username} style={styles.tr}>
+                                        <td style={styles.td}>
+                                            <div style={styles.userCell}>
+                                                <div style={styles.userAvatar}>{u.username.charAt(0).toUpperCase()}</div>
+                                                <span style={styles.userName}>{u.username}</span>
+                                            </div>
+                                        </td>
+                                        <td style={styles.td}>
+                                            <span style={{
+                                                ...styles.rolePill,
+                                                backgroundColor: `${roleColors[u.role]}18`,
+                                                color: roleColors[u.role],
+                                                borderColor: `${roleColors[u.role]}30`,
+                                            }}>
+                                                {u.role}
+                                            </span>
+                                        </td>
                                         <td style={styles.td}>
                                             <select
                                                 style={styles.select}
                                                 value={u.role}
                                                 onChange={(e) => handleRoleChange(u.username, e.target.value)}
-                                                disabled={u.username === user.username}
-                                            >
+                                                disabled={u.username === user.username}>
                                                 <option value="USER">User</option>
                                                 <option value="TECHNICIAN">Technician</option>
                                                 <option value="MANAGER">Manager</option>
@@ -116,10 +152,13 @@ const AuthDashboard = () => {
                                         </td>
                                         <td style={styles.td}>
                                             <button
-                                                style={styles.deleteButton}
+                                                style={{
+                                                    ...styles.deleteButton,
+                                                    opacity: u.username === user.username ? 0.35 : 1,
+                                                    cursor: u.username === user.username ? 'not-allowed' : 'pointer',
+                                                }}
                                                 onClick={() => handleDeleteUser(u.username)}
-                                                disabled={u.username === user.username}
-                                            >
+                                                disabled={u.username === user.username}>
                                                 Delete
                                             </button>
                                         </td>
@@ -130,12 +169,16 @@ const AuthDashboard = () => {
                     </div>
                 </div>
 
+                {/* Tasks Overview */}
                 <div style={styles.section}>
-                    <h3 style={styles.sectionTitle}>All System Tasks</h3>
+                    <div style={styles.sectionHeader}>
+                        <h3 style={styles.sectionTitle}>All System Tasks</h3>
+                        <span style={styles.count}>{tasks.length}</span>
+                    </div>
                     {tasks.length === 0 ? (
                         <p style={styles.empty}>No tasks in the system.</p>
                     ) : (
-                        <div style={styles.list}>
+                        <div style={styles.taskList}>
                             {tasks.map(task => (
                                 <div
                                     key={task.id}
@@ -145,11 +188,8 @@ const AuthDashboard = () => {
                                         <span style={styles.taskCode}>{task.taskCode}</span>
                                         <span style={styles.taskName}>{task.taskName}</span>
                                     </div>
-                                    <span style={{
-                                        ...styles.badge,
-                                        backgroundColor: statusColor(task.status)
-                                    }}>
-                                        {task.status}
+                                    <span style={{ ...styles.badge, backgroundColor: statusColor(task.status) }}>
+                                        {task.status.replace(/_/g, ' ')}
                                     </span>
                                 </div>
                             ))}
@@ -162,114 +202,107 @@ const AuthDashboard = () => {
 };
 
 const styles = {
-    container: {
-        padding: '24px',
-        maxWidth: '900px',
-        margin: '0 auto',
+    page: { backgroundColor: '#F0EBE5', minHeight: '100vh' },
+    container: { padding: '32px 36px', maxWidth: '960px', margin: '0 auto' },
+    pageHeader: { marginBottom: '28px' },
+    heading: { margin: '0 0 4px 0', fontSize: '24px', fontWeight: '700', color: '#2C3A47', letterSpacing: '-0.4px' },
+    subheading: { margin: 0, fontSize: '14px', color: '#6B7280' },
+    errorBox: {
+        display: 'flex', alignItems: 'center', gap: '8px',
+        padding: '10px 16px', backgroundColor: '#FEF2F2',
+        border: '1px solid #FECACA', borderRadius: '8px',
+        color: '#B91C1C', fontSize: '13px', marginBottom: '16px',
     },
-    heading: {
-        fontSize: '22px',
-        color: '#616F84',
-        margin: 0,
+    successBox: {
+        display: 'flex', alignItems: 'center', gap: '8px',
+        padding: '10px 16px', backgroundColor: '#F0FDF4',
+        border: '1px solid #BBF7D0', borderRadius: '8px',
+        color: '#166534', fontSize: '13px', marginBottom: '16px',
     },
-    subtitle: {
-        color: '#666',
-        fontSize: '14px',
-        marginBottom: '20px',
-    },
-    section: {
-        marginBottom: '32px',
-    },
-    sectionTitle: {
-        fontSize: '18px',
-        color: '#616F84',
-        marginBottom: '12px',
+    section: { marginBottom: '28px' },
+    sectionHeader: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' },
+    sectionTitle: { margin: 0, fontSize: '16px', fontWeight: '600', color: '#2C3A47' },
+    count: {
+        backgroundColor: '#F0EBE5', color: '#5C6B7A',
+        fontSize: '12px', fontWeight: '700', padding: '2px 9px',
+        borderRadius: '12px', border: '1px solid #E5E0DB',
     },
     card: {
         backgroundColor: 'white',
-        borderRadius: '8px',
-        padding: '20px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(44,58,71,0.07)',
+        border: '1px solid rgba(229,224,219,0.5)',
+        overflow: 'hidden',
     },
-    table: {
-        width: '100%',
-        borderCollapse: 'collapse',
-    },
+    table: { width: '100%', borderCollapse: 'collapse' },
+    tableHeaderRow: { backgroundColor: '#FAFAF9' },
     th: {
         textAlign: 'left',
-        padding: '12px 16px',
-        borderBottom: '1px solid #ddd',
-        color: '#616F84',
-        fontWeight: 'bold',
+        padding: '13px 18px',
+        borderBottom: '1px solid #E5E0DB',
+        color: '#6B7280',
+        fontWeight: '600',
+        fontSize: '12px',
+        letterSpacing: '0.4px',
+        textTransform: 'uppercase',
     },
-    td: {
-        padding: '12px 16px',
-        borderBottom: '1px solid #eee',
-        color: '#333',
+    tr: { borderBottom: '1px solid #F5F3F0' },
+    td: { padding: '13px 18px', color: '#2C3A47', fontSize: '14px' },
+    userCell: { display: 'flex', alignItems: 'center', gap: '10px' },
+    userAvatar: {
+        width: '28px', height: '28px', borderRadius: '50%',
+        backgroundColor: '#E5E0DB', display: 'flex',
+        alignItems: 'center', justifyContent: 'center',
+        fontSize: '12px', fontWeight: '600', color: '#5C6B7A',
+    },
+    userName: { fontWeight: '500' },
+    rolePill: {
+        display: 'inline-block',
+        padding: '3px 10px',
+        borderRadius: '20px',
+        fontSize: '11px',
+        fontWeight: '700',
+        border: '1px solid transparent',
+        letterSpacing: '0.3px',
     },
     select: {
-        padding: '6px 10px',
-        borderRadius: '4px',
-        border: '1px solid #ccc',
+        padding: '7px 10px',
+        borderRadius: '6px',
+        border: '1.5px solid #E5E0DB',
+        fontSize: '13px',
+        backgroundColor: '#FAFAF9',
+        color: '#2C3A47',
     },
     deleteButton: {
-        padding: '6px 12px',
-        backgroundColor: '#ef4444',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
+        padding: '6px 14px',
+        backgroundColor: 'transparent',
+        color: '#C0392B',
+        border: '1.5px solid #C0392B',
+        borderRadius: '6px',
         cursor: 'pointer',
+        fontSize: '13px',
+        fontWeight: '500',
+        transition: 'all 0.15s ease',
     },
-    error: {
-        color: 'red',
-        fontSize: '14px',
-        marginBottom: '10px',
-    },
-    success: {
-        color: 'green',
-        fontSize: '14px',
-        marginBottom: '10px',
-    },
-    list: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-    },
+    taskList: { display: 'flex', flexDirection: 'column', gap: '8px' },
     taskRow: {
         backgroundColor: 'white',
-        borderRadius: '8px',
-        padding: '14px 16px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        cursor: 'pointer',
+        borderRadius: '10px',
+        padding: '14px 18px',
+        boxShadow: '0 2px 6px rgba(44,58,71,0.06)',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        cursor: 'pointer', border: '1px solid rgba(229,224,219,0.5)',
+        transition: 'all 0.15s ease',
     },
-    taskLeft: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '4px',
-    },
-    taskCode: {
-        fontSize: '11px',
-        color: '#999',
-        fontFamily: 'monospace',
-    },
-    taskName: {
-        fontSize: '14px',
-        fontWeight: 'bold',
-        color: '#616F84',
-    },
+    taskLeft: { display: 'flex', flexDirection: 'column', gap: '3px' },
+    taskCode: { fontSize: '11px', color: '#9CA3AF', fontFamily: 'monospace', fontWeight: '500', letterSpacing: '0.5px' },
+    taskName: { fontSize: '14px', fontWeight: '600', color: '#2C3A47' },
     badge: {
-        fontSize: '11px',
-        color: 'white',
-        padding: '3px 10px',
-        borderRadius: '12px',
+        fontSize: '11px', color: 'white',
+        padding: '3px 10px', borderRadius: '20px',
+        fontWeight: '600', letterSpacing: '0.3px',
     },
-    empty: {
-        color: '#666',
-        fontSize: '14px',
-    },
+    empty: { color: '#9CA3AF', fontSize: '14px', fontStyle: 'italic' },
 };
 
 export default AuthDashboard;
