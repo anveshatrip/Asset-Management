@@ -26,7 +26,7 @@ const Register = () => {
         setError('');
         try {
             await api.post('/auth/register', form);
-            setSuccess('Account created! Redirecting to login…');
+            setSuccess('Account created successfully! Redirecting to sign in…');
             setTimeout(() => navigate('/login'), 1500);
         } catch (err) {
             setError('Registration failed. Username may already exist.');
@@ -36,22 +36,21 @@ const Register = () => {
         }
     };
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') handleRegister();
+    };
+
     return (
         <div style={styles.page}>
-            <div style={styles.leftPanel}>
-                <div style={styles.brandArea}>
+            <div style={styles.container}>
+                <div style={styles.header}>
                     <div style={styles.logoMark}>AM</div>
-                    <h1 style={styles.appName}>Asset Maintenance</h1>
-                    <p style={styles.tagline}>Create your account to get started with asset tracking and maintenance management.</p>
+                    <h1 style={styles.brandTitle}>Asset Management</h1>
                 </div>
-            </div>
 
-            <div style={styles.rightPanel}>
                 <div style={styles.card}>
-                    <div style={styles.cardHeader}>
-                        <h2 style={styles.title}>Create account</h2>
-                        <p style={styles.subtitle}>Register to get started</p>
-                    </div>
+                    <h2 style={styles.title}>Create account</h2>
+                    <p style={styles.subtitle}>Enter your details to create an account</p>
 
                     {error && (
                         <div style={styles.errorBox}>
@@ -75,6 +74,7 @@ const Register = () => {
                             placeholder="Choose a username"
                             value={form.username}
                             onChange={handleChange}
+                            onKeyDown={handleKeyDown}
                             autoFocus
                         />
                     </div>
@@ -85,9 +85,10 @@ const Register = () => {
                             style={styles.input}
                             type="password"
                             name="password"
-                            placeholder="Create a password"
+                            placeholder="Choose a password"
                             value={form.password}
                             onChange={handleChange}
+                            onKeyDown={handleKeyDown}
                         />
                     </div>
 
@@ -95,7 +96,7 @@ const Register = () => {
                         style={{ ...styles.button, opacity: loading ? 0.7 : 1 }}
                         onClick={handleRegister}
                         disabled={loading}>
-                        {loading ? 'Creating account…' : 'Create Account'}
+                        {loading ? 'Creating account…' : 'Create account'}
                     </button>
 
                     <p style={styles.footerText}>
@@ -115,79 +116,66 @@ const styles = {
         display: 'flex',
         minHeight: '100vh',
         backgroundColor: '#F0EBE5',
-    },
-    leftPanel: {
-        flex: 1,
-        backgroundColor: '#2C3A47',
-        padding: '60px 56px',
-        display: 'flex',
-        flexDirection: 'column',
+        alignItems: 'center',
         justifyContent: 'center',
+        padding: '24px',
     },
-    brandArea: {
+    container: {
+        width: '100%',
+        maxWidth: '400px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px',
+        alignItems: 'center',
+        gap: '24px',
+    },
+    header: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
     },
     logoMark: {
-        width: '52px',
-        height: '52px',
-        backgroundColor: '#8C7B6E',
-        borderRadius: '14px',
+        width: '36px',
+        height: '36px',
+        backgroundColor: '#2C3A47',
+        borderRadius: '10px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '18px',
+        fontSize: '14px',
         fontWeight: '700',
         color: 'white',
-        letterSpacing: '1px',
+        letterSpacing: '0.5px',
     },
-    appName: {
+    brandTitle: {
         margin: 0,
-        fontSize: '28px',
+        fontSize: '20px',
         fontWeight: '700',
-        color: '#F0EBE5',
-        letterSpacing: '-0.5px',
-    },
-    tagline: {
-        margin: 0,
-        fontSize: '15px',
-        color: '#8C9EAD',
-        lineHeight: '1.7',
-        maxWidth: '340px',
-    },
-    rightPanel: {
-        flex: '0 0 460px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '40px 32px',
+        color: '#2C3A47',
+        letterSpacing: '-0.3px',
     },
     card: {
         backgroundColor: 'white',
-        padding: '44px 40px',
+        padding: '36px 32px',
         borderRadius: '16px',
-        boxShadow: '0 8px 32px rgba(44,58,71,0.12), 0 2px 8px rgba(44,58,71,0.06)',
+        boxShadow: '0 4px 24px rgba(44,58,71,0.08), 0 1px 4px rgba(44,58,71,0.04)',
+        border: '1px solid rgba(229,224,219,0.6)',
         width: '100%',
-        maxWidth: '380px',
+        boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
-        gap: '20px',
-    },
-    cardHeader: {
-        marginBottom: '4px',
+        gap: '18px',
     },
     title: {
-        margin: '0 0 6px 0',
-        fontSize: '22px',
+        margin: 0,
+        fontSize: '20px',
         fontWeight: '700',
         color: '#2C3A47',
         letterSpacing: '-0.3px',
     },
     subtitle: {
-        margin: 0,
+        margin: '-10px 0 0 0',
         color: '#6B7280',
-        fontSize: '14px',
+        fontSize: '13.5px',
     },
     errorBox: {
         display: 'flex',
@@ -218,7 +206,7 @@ const styles = {
     },
     label: {
         fontSize: '13px',
-        fontWeight: '500',
+        fontWeight: '600',
         color: '#374151',
     },
     input: {
@@ -232,22 +220,21 @@ const styles = {
         boxSizing: 'border-box',
     },
     button: {
-        padding: '12px',
+        padding: '11px',
         backgroundColor: '#5C6B7A',
         color: 'white',
         border: 'none',
         borderRadius: '8px',
-        fontSize: '15px',
+        fontSize: '14px',
         fontWeight: '600',
         cursor: 'pointer',
-        letterSpacing: '0.2px',
         marginTop: '4px',
     },
     footerText: {
         textAlign: 'center',
         fontSize: '13px',
         color: '#6B7280',
-        margin: '4px 0 0 0',
+        margin: '2px 0 0 0',
     },
     linkText: {
         color: '#8C7B6E',
