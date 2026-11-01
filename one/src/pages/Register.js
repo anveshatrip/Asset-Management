@@ -29,7 +29,13 @@ const Register = () => {
             setSuccess('Account created successfully! Redirecting to sign in…');
             setTimeout(() => navigate('/login'), 1500);
         } catch (err) {
-            setError('Registration failed. Username may already exist.');
+            if (err.response) {
+                setError('Registration failed. Username may already exist.');
+            } else if (err.request) {
+                setError('Server is unreachable. Please try again later.');
+            } else {
+                setError('Something went wrong. Please try again.');
+            }
             setSuccess('');
         } finally {
             setLoading(false);

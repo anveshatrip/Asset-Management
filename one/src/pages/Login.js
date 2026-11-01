@@ -29,7 +29,13 @@ const Login = () => {
             else if (role === 'AUTH') navigate('/dashboard/auth');
 
         } catch (err) {
-            setError('Invalid username or password.');
+            if (err.response) {
+                setError('Invalid username or password.');
+            } else if (err.request) {
+                setError('Server is unreachable. Please try again later.');
+            } else {
+                setError('Something went wrong. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
